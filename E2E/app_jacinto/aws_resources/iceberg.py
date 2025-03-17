@@ -16,10 +16,12 @@ from pyiceberg.types import (
     TimestampType,
     DateType
 )
+import boto3
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 load_dotenv()
+
 
 def extract_data_from_postgres(conn: psycopg2.connect, table_name: str) -> None:
     cur = conn.cursor()
@@ -28,7 +30,18 @@ def extract_data_from_postgres(conn: psycopg2.connect, table_name: str) -> None:
     return data
 
 
+def set_aws_region(region: str):
+    os.environ["AWS_REGION"] = region
+    os.environ["AWS_DEFAULT_REGION"] = region  
+    logging.info(f"AWS region set to {region}")
+
+
 def load_catalog_iceberg(provider: str, warehouse_bucket: str, region: str) -> Catalog:
+    set_aws_region(region)
+
+    session = boto3.session.Session()
+    s3_client = boto3.client("s3", region_name=region)
+
     return load_catalog(
         provider,
         **{

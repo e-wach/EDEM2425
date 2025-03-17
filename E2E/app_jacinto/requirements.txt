@@ -4,3 +4,4 @@ s3fs
 pandas
 psycopg2
 dotenv
+boto3
